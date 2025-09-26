@@ -3,7 +3,9 @@
 Method Summary:
 initializeRepo()
 resetRepo()
-verifyRepoExists
+verifyRepoExists()
+createHash()
+readFile()
 
 Method Details:
 initializeRepo()
@@ -27,12 +29,44 @@ boolean verifyRepoExists()
     Returns:
         true if all necessary files exist and false otherwise
 
+createHash()
+    Takes a file, reads its contents, then takes those contents and hashes them in SHA1 formatting
+
+    Parameters:
+        file - the file who's contents are beinging hashed
+    
+    Returns:
+        The hash of the file's contents as a String
+
+readFile()
+    Uses a BufferedReader to read through a file, then compiles its contents into a String
+
+    Parameters:
+        file - the file who's contents are being read
+    
+    Returns:
+        The file contents as a String
+
 
 ==GitTester.java==
+Method Summary:
+createFile()
+
+Method Details:
+createFile()
+    Creates a file and writes in the file contents
+
+    Parameters:
+        fileName - The name of the file
+        fileContents - The intended contents of the file, what will be written in
+    
+    Returns:
+        The file
 
 Test Summary:
 initializeRepo tests
 reseteRepo tests
+createHash tests
 
 Test Details:
 initializeRepo tests
@@ -40,3 +74,6 @@ initializeRepo tests
 
 resetRepo tests
     Checks to see if the repositories "git2" and "git3" were successfully reset. Attempts to reset "git4" in order to test the edge case where the repo does not exist.
+
+createHash tests
+    Creates test files with things written in them, and then checks to see if the SHA1 hash code generated is correct.

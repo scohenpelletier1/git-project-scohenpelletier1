@@ -1,6 +1,13 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Git {
+    // public methods
     public static void initializeRepo(String repoName) {
         // Create the file paths
         File git = new File(repoName);
@@ -83,6 +90,29 @@ public class Git {
 
     }
 
+    public static String createHash(File file) throws IOException, NoSuchAlgorithmException {
+        // grab the file contents by reading the file
+        String fileContents = readFile(file);
+
+        // ceate sha1 digest
+        MessageDigest digest = MessageDigest.getInstance("SHA1");
+
+        // get the hash by counting bytes
+        byte[] hashBytes = digest.digest(fileContents.getBytes(StandardCharsets.UTF_8));
+
+        // convert hash to hex string
+        String hexCode = "";
+
+        for (int i = 0; i < hashBytes.length; i++) {
+            hexCode += String.format("%02x", hashBytes[i]);
+        
+        }
+
+        return hexCode;
+    
+    }
+
+    // private methods
     private static boolean verifyRepoExists(File mainDir) {
         // make sure the main directory (git) exists
         if (!mainDir.exists()) {
@@ -106,6 +136,25 @@ public class Git {
 
         // if none of the files exist, return false
         return false;
+    
+    }
+
+    private static String readFile(File file) throws IOException {
+        // get the reader
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String fileContents = "";
+        String line;
+
+        // read the file then close the file
+        while ((line = reader.readLine()) != null) {
+            fileContents += line;
+        
+        }
+
+        reader.close();
+
+        // return the file contents
+        return fileContents;
     
     }
 
