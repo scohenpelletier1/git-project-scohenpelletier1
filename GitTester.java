@@ -73,6 +73,16 @@ public class GitTester {
         System.out.println(Git.createBlob("git", file3)); // creates file cf9eef560135abb820422435cf2be5b4089adba5
         System.out.println();
 
+        // updateIndex tests
+        System.out.println("==updateIndex()==");
+        Git.updateIndex("git", file1); // db1668952fdb286939fc39d573ed88c720323b69 file1
+        Git.updateIndex("git", file2); // f3db729468c3b8ff98e9d88a313d5dda633d26f7 file2
+        Git.updateIndex("git", file3); // 1a282e683577b87e845d8f197ad2a7c7bda15384 file3
+        System.out.println();
+
+        // reset at end
+        // Git.resetRepo("git");
+
     }
 
 }

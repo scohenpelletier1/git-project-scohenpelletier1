@@ -118,7 +118,7 @@ public class Git {
     
     }
 
-    public static boolean createBlob(String repoName, File file) throws NoSuchAlgorithmException, IOException {
+    public static String createBlob(String repoName, File file) throws NoSuchAlgorithmException, IOException {
         // get the hash
         String hash;
 
@@ -161,15 +161,28 @@ public class Git {
         for (File objectFile : files) {
             // if the file is there, return true
             if (objectFile.getName().equals(hash)) {
-                return true;
+                return blobFile.getName();
             
             }
         
         }
 
-        // return false if the file isn't there
-        return false;
+        // Error if the blob file couldn't be created
+        System.out.println("BLOB File Could Not Be Created");
+        return "";
 
+    }
+
+    public static void updateIndex(String repoName, File file) throws NoSuchAlgorithmException, IOException {
+        // get the update message
+        String update = createBlob(repoName, file) + " " + file.getPath() + "\n";
+
+        // create the writer and write the index update
+        BufferedWriter writer = new BufferedWriter(new FileWriter(repoName + "/index", true));
+        writer.write(update);
+
+        writer.close();
+    
     }
 
     // private methods

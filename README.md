@@ -10,6 +10,7 @@ verifyRepoExists()
 createHash()
 readFile()
 compressFile()
+updateIndex()
 
 Method Details:
 initializeRepo()
@@ -58,16 +59,23 @@ createBlob()
         repoName - The name of the repository
 
     Returns:
-        true if the file is found in the objects directory and false otherwise.
+        the name of the BLOB file
 
 compressFile()
-    Compresses the given file by _____
+    Compresses the given file by converting each byte into a character
 
     Parameters:
         file - the file who's being compressed
 
     Returns:
         The compressed file
+
+updateIndex()
+    Updates the index file with the SHA1 BLOB file name information, as well as the actual name of the file.
+
+    Parameters:
+        repoName - The name of the repository
+        file - the file that is being added to the index update
 
 
 ==GitTester.java==
@@ -97,6 +105,7 @@ initializeRepo tests
 reseteRepo tests
 createHash tests
 createBlob tests
+updateIndex tests
 
 Test Details:
 initializeRepo tests
@@ -110,3 +119,6 @@ createHash tests
 
 createBlob tests
     Checks to see if the BLOB files are accurately being created in the objects directory when compression is off, with the right content inside of them. Then, it resets the objects directory and tests to see if the BLOB files are being created when compression is on.
+
+updateIndex tests
+    Updates the index and checks to see if it's accurately writing the correct information in the index file.
