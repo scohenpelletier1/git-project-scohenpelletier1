@@ -20,7 +20,7 @@ resetRepo()
     Parameters:
         repoName - The name of the repository that is being deleted
 
-boolean verifyRepoExists()
+verifyRepoExists()
     Goes through each file that should be in the repository and checks to see if they exist or not
 
     Parameters:
@@ -47,6 +47,12 @@ readFile()
     Returns:
         The file contents as a String
 
+void createBlob()
+    Gets the SHA1 hash of a file, and creats a new BLOB file with the hash as its name. Then, the file contents are copied over into the BLOB file.
+
+    Parameters:
+        repoName - The name of the repository
+
 
 ==GitTester.java==
 Method Summary:
@@ -67,6 +73,7 @@ Test Summary:
 initializeRepo tests
 reseteRepo tests
 createHash tests
+createBlob tests
 
 Test Details:
 initializeRepo tests
@@ -77,3 +84,6 @@ resetRepo tests
 
 createHash tests
     Creates test files with things written in them, and then checks to see if the SHA1 hash code generated is correct.
+
+createBlob tests
+    Checks to see if the BLOB files are accurately being created in the objects folder, with the right content inside of them.

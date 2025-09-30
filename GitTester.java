@@ -34,13 +34,20 @@ public class GitTester {
         System.out.println();
 
         // createHash tests
-        System.out.println("==resetRepo()==");
+        System.out.println("==createHash()==");
         File file1 = createFile("file1", "Hello, World!");
         System.out.println(Git.createHash(file1)); // 0a0a9f2a6772942557ab5355d76af442f8f65e01
         File file2 = createFile("file2", "My name is Sophia Cohen-Pelletier :D");
         System.out.println(Git.createHash(file2)); // 82a593ef07d35285dd53c050a5cc564709b07dab
         File file3 = createFile("file3", "Why are you still reading the test cases?");
         System.out.println(Git.createHash(file3)); // 2020d57460bdc7624d7e0e746b746cfa81414be5
+        System.out.println();
+
+        // createBlob tests
+        System.out.println("==createBlob()==");
+        Git.createBlob("git", file1); // creates file 0a0a9f2a6772942557ab5355d76af442f8f65e01
+        Git.createBlob("git", file2); // creates file 82a593ef07d35285dd53c050a5cc564709b07dab
+        Git.createBlob("git", file3); // creates file 2020d57460bdc7624d7e0e746b746cfa81414be5
         System.out.println();
 
     }

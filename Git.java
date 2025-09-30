@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -110,6 +112,35 @@ public class Git {
 
         return hexCode;
     
+    }
+
+    public static void createBlob(String repoName, File file) throws NoSuchAlgorithmException, IOException {
+        // get the file's hash
+        String hash = createHash(file);
+
+        // make the blob file
+        File blobFile = new File(repoName + "/objects/" + hash);
+
+        // read the old file
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String fileContents = "";
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            fileContents += line;
+
+        }
+
+        reader.close();
+
+        // write the contents in the new file
+        BufferedWriter writer = new BufferedWriter(new FileWriter(blobFile));
+        writer.write(fileContents);
+        writer.close();
+
+        // create the new file
+        blobFile.createNewFile();
+
     }
 
     // private methods
