@@ -1,4 +1,7 @@
 ==Git.java==
+Global variables:
+compression
+    toggles whether or not the file compresses. False by default
 
 Method Summary:
 initializeRepo()
@@ -6,16 +9,17 @@ resetRepo()
 verifyRepoExists()
 createHash()
 readFile()
+compressFile()
 
 Method Details:
 initializeRepo()
-    Initializes the repository with a main git directory, and three subdirectories (objects, index, and HEAD)
+    Initializes the repository with a main git directory, a subdirectory (objects), and two files (index, and HEAD)
 
     Parameters:
         repoName - The name of the repository that is being initialized
 
 resetRepo()
-    Deletes all the files in the repository, including the main git directory and three subdirectories (objects, index, and HEAD)
+    Deletes all the files in the repository, including the main git directory, the subdirectory (objects), and two files (index, and HEAD)
 
     Parameters:
         repoName - The name of the repository that is being deleted
@@ -47,7 +51,7 @@ readFile()
     Returns:
         The file contents as a String
 
-void createBlob()
+createBlob()
     Gets the SHA1 hash of a file, and creats a new BLOB file with the hash as its name. Then, the file contents are copied over into the BLOB file. Finally, it's confirmed that the BLOB file is in the objects directory
 
     Parameters:
@@ -55,6 +59,15 @@ void createBlob()
 
     Returns:
         true if the file is found in the objects directory and false otherwise.
+
+compressFile()
+    Compresses the given file by _____
+
+    Parameters:
+        file - the file who's being compressed
+
+    Returns:
+        The compressed file
 
 
 ==GitTester.java==
@@ -96,4 +109,4 @@ createHash tests
     Creates test files with things written in them, and then checks to see if the SHA1 hash code generated is correct.
 
 createBlob tests
-    Checks to see if the BLOB files are accurately being created in the objects directory, with the right content inside of them. Then, it resets the objects directory and tests to see if the BLOB files are being created
+    Checks to see if the BLOB files are accurately being created in the objects directory when compression is off, with the right content inside of them. Then, it resets the objects directory and tests to see if the BLOB files are being created when compression is on.

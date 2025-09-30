@@ -56,16 +56,21 @@ public class GitTester {
         System.out.println();
 
         // createBlob tests
-        System.out.println("==createBlob()==");
-        Git.createBlob("git", file1); // creates file 0a0a9f2a6772942557ab5355d76af442f8f65e01
-        Git.createBlob("git", file2); // creates file 82a593ef07d35285dd53c050a5cc564709b07dab
-        Git.createBlob("git", file3); // creates file 2020d57460bdc7624d7e0e746b746cfa81414be5
+        System.out.println("==createBlob()=="); // everything should return true
+
+        // compression off
+        Git.compression = false;
+        System.out.println(Git.createBlob("git", file1)); // creates file 0a0a9f2a6772942557ab5355d76af442f8f65e01
+        System.out.println(Git.createBlob("git", file2)); // creates file 82a593ef07d35285dd53c050a5cc564709b07dab
+        System.out.println(Git.createBlob("git", file3)); // creates file 2020d57460bdc7624d7e0e746b746cfa81414be5
 
         resetObjectFiles("git");
 
-        System.out.println(Git.createBlob("git", file1)); // true
-        System.out.println(Git.createBlob("git", file2)); // true
-        System.out.println(Git.createBlob("git", file3)); // true
+        // compression on
+        Git.compression = true;
+        System.out.println(Git.createBlob("git", file1)); // creates file 320ff6a9534a245d34a1f15b7affa021fb53301a
+        System.out.println(Git.createBlob("git", file2)); // creates file 1192dca5eb1608edb89cee23186f5fd2bf793af1
+        System.out.println(Git.createBlob("git", file3)); // creates file cf9eef560135abb820422435cf2be5b4089adba5
         System.out.println();
 
     }

@@ -4,20 +4,24 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Git {
+    // instance variables
+    static boolean compression = false; // false by default
+    
     // public methods
-    public static void initializeRepo(String repoName) {
+    public static void initializeRepo(String repoName) throws IOException {
         // Create the file paths
         File git = new File(repoName);
         File obj = new File(repoName + "/objects");
         File index = new File(repoName + "/index");
         File head = new File(repoName + "/HEAD");
         
-       // check to see if the repo exists
+        // check to see if the repo exists
         if (git.exists() && obj.exists() && index.exists() && head.exists()) {
             System.out.println("Git Repository Already Exists");
             return;
@@ -36,16 +40,16 @@ public class Git {
 
         }
 
-        // make the index directory
+        // make the index file
         if (!index.exists()) {
-            index.mkdir();
+            index.createNewFile();
 
         }
 
 
-        // make the head directory
+        // make the head file
         if (!head.exists()) {
-            head.mkdir();
+            head.createNewFile();
 
         }
 
@@ -115,8 +119,18 @@ public class Git {
     }
 
     public static boolean createBlob(String repoName, File file) throws NoSuchAlgorithmException, IOException {
+        // get the hash
+        String hash;
+
+        // if compression is turned on
+        if (compression) {
+            // compress the file
+            file = compressFile(file);
+
+        }
+
         // get the file's hash
-        String hash = createHash(file);
+        hash = createHash(file);
 
         // make the blob file
         File blobFile = new File(repoName + "/objects/" + hash);
@@ -201,6 +215,35 @@ public class Git {
 
         // return the file contents
         return fileContents;
+    
+    }
+
+    private static File compressFile(File file) throws IOException {
+        // create compressed file
+        File compressedFile = new File(file.getName());
+
+        // read the original file
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String fileContents = "";
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            fileContents += line + "\n";
+
+        }
+
+        reader.close();
+
+        // encode the contents
+        byte[] bytes = fileContents.getBytes("UTF-8");
+
+        // get the buffered writer and write the compressed data
+        BufferedWriter writer = new BufferedWriter(new FileWriter(compressedFile));
+        writer.write(bytes.toString());
+        writer.close();
+
+        // return the compressed file
+        return compressedFile;
     
     }
 
