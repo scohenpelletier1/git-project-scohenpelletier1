@@ -124,13 +124,14 @@ public class Git {
 
         // if compression is turned on
         if (compression) {
-            // compress the file
-            file = compressFile(file);
+            // compress the file and get hash
+            hash = createHash(compressFile(file));
 
+        } else {
+             // get the file's hash
+            hash = createHash(file);
+        
         }
-
-        // get the file's hash
-        hash = createHash(file);
 
         // make the blob file
         File blobFile = new File(repoName + "/objects/" + hash);
@@ -175,7 +176,15 @@ public class Git {
 
     public static void updateIndex(String repoName, File file) throws NoSuchAlgorithmException, IOException {
         // get the update message
-        String update = createBlob(repoName, file) + " " + file.getPath() + "\n";
+        String update;
+
+        if (compression) {
+            update = createHash(compressFile(file)) + " " + file.getPath() + "\n";
+        
+        } else {
+            update = createHash(file) + " " + file.getPath() + "\n";
+
+        }
 
         // create the writer and write the index update
         BufferedWriter writer = new BufferedWriter(new FileWriter(repoName + "/index", true));
@@ -232,9 +241,6 @@ public class Git {
     }
 
     private static File compressFile(File file) throws IOException {
-        // create compressed file
-        File compressedFile = new File(file.getName());
-
         // read the original file
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String fileContents = "";
@@ -250,13 +256,13 @@ public class Git {
         // encode the contents
         byte[] bytes = fileContents.getBytes("UTF-8");
 
-        // get the buffered writer and write the compressed data
-        BufferedWriter writer = new BufferedWriter(new FileWriter(compressedFile));
+        // get the buffered writer and override the file with the compressed data
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         writer.write(bytes.toString());
         writer.close();
 
-        // return the compressed file
-        return compressedFile;
+        // return the now compressed file
+        return file;
     
     }
 
