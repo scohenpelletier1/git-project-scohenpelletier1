@@ -17,6 +17,18 @@ public class GitTester {
 
     }
 
+    public static void resetObjectFiles(String repoName) {
+        // get the files in the objects folder
+        File[] files = new File(repoName + "/objects").listFiles();
+
+        // delete the files
+        for (File file : files) {
+            file.delete();
+        
+        }
+    
+    }
+
     public static void main(String args[]) throws IOException, NoSuchAlgorithmException {
         // initializeRepo tests
         System.out.println("==initializeRepo()==");
@@ -48,6 +60,12 @@ public class GitTester {
         Git.createBlob("git", file1); // creates file 0a0a9f2a6772942557ab5355d76af442f8f65e01
         Git.createBlob("git", file2); // creates file 82a593ef07d35285dd53c050a5cc564709b07dab
         Git.createBlob("git", file3); // creates file 2020d57460bdc7624d7e0e746b746cfa81414be5
+
+        resetObjectFiles("git");
+
+        System.out.println(Git.createBlob("git", file1)); // true
+        System.out.println(Git.createBlob("git", file2)); // true
+        System.out.println(Git.createBlob("git", file3)); // true
         System.out.println();
 
     }

@@ -48,15 +48,19 @@ readFile()
         The file contents as a String
 
 void createBlob()
-    Gets the SHA1 hash of a file, and creats a new BLOB file with the hash as its name. Then, the file contents are copied over into the BLOB file.
+    Gets the SHA1 hash of a file, and creats a new BLOB file with the hash as its name. Then, the file contents are copied over into the BLOB file. Finally, it's confirmed that the BLOB file is in the objects directory
 
     Parameters:
         repoName - The name of the repository
+
+    Returns:
+        true if the file is found in the objects directory and false otherwise.
 
 
 ==GitTester.java==
 Method Summary:
 createFile()
+resetObjectFiles()
 
 Method Details:
 createFile()
@@ -68,6 +72,12 @@ createFile()
     
     Returns:
         The file
+
+resetObjectFiles()
+    Deletes all of the files in the object directory
+
+    Parameters:
+        repoName - The name of the repository
 
 Test Summary:
 initializeRepo tests
@@ -86,4 +96,4 @@ createHash tests
     Creates test files with things written in them, and then checks to see if the SHA1 hash code generated is correct.
 
 createBlob tests
-    Checks to see if the BLOB files are accurately being created in the objects folder, with the right content inside of them.
+    Checks to see if the BLOB files are accurately being created in the objects directory, with the right content inside of them. Then, it resets the objects directory and tests to see if the BLOB files are being created
