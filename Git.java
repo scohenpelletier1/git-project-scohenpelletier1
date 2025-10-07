@@ -127,6 +127,9 @@ public class Git {
             // compress the file and get hash
             hash = createHash(compressFile(file));
 
+            // get rid of the compressed file
+            compressFile(file).delete();
+
         } else {
              // get the file's hash
             hash = createHash(file);
@@ -179,18 +182,55 @@ public class Git {
         String update;
 
         if (compression) {
-            update = createHash(compressFile(file)) + " " + file.getPath() + "\n";
+            update = createHash(compressFile(file)) + " " + file.getPath();
+
+            // get rid of the compressed file
+            compressFile(file).delete();
         
         } else {
-            update = createHash(file) + " " + file.getPath() + "\n";
+            update = createHash(file) + " " + file.getPath();
 
         }
 
-        // create the writer and write the index update
-        BufferedWriter writer = new BufferedWriter(new FileWriter(repoName + "/index", true));
-        writer.write(update);
+        // check for file updates
+        String index = readFile(new File(repoName + "/index"));
 
-        writer.close();
+        // this will also take care of duplicates
+        if (index.contains(" " + file.getPath())) {
+            // create the writer and write the index update
+            BufferedReader reader = new BufferedReader(new FileReader(repoName + "/index"));
+            String line;
+            String newUpdate = "";
+
+            // replace entry
+            while ((line = reader.readLine()) != null) {
+                if (line.contains(" " + file.getPath())) {
+                    newUpdate += update + "\n";
+                
+                } else {
+                    // keep reading
+                    newUpdate += line + "\n";
+                
+                }
+            
+            }
+
+            reader.close();
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(repoName + "/index"));
+            writer.write(newUpdate);
+            writer.close();
+
+        } else {
+            // create the writer and write the index update
+            BufferedWriter writer = new BufferedWriter(new FileWriter(repoName + "/index", true));
+            writer.write(update + "\n");
+
+            writer.close();
+        
+        }
+
+        createBlob(repoName, file);
     
     }
 
@@ -242,27 +282,21 @@ public class Git {
 
     private static File compressFile(File file) throws IOException {
         // read the original file
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String fileContents = "";
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            fileContents += line + "\n";
-
-        }
-
-        reader.close();
+        String fileContents = readFile(file);
 
         // encode the contents
         byte[] bytes = fileContents.getBytes("UTF-8");
 
+        // make a new compressed file
+        File compressedFile = new File("Compressed" + file.getName());
+
         // get the buffered writer and override the file with the compressed data
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(compressedFile));
         writer.write(bytes.toString());
         writer.close();
 
         // return the now compressed file
-        return file;
+        return compressedFile;
     
     }
 
