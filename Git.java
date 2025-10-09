@@ -234,6 +234,46 @@ public class Git {
     
     }
 
+    public static String createTree(String treeName, File repoName) throws IOException, NoSuchAlgorithmException {
+        // get all the files in the folder
+        File[] files = repoName.listFiles();
+        StringBuilder references = new StringBuilder();
+
+        if (files.length == 0) {
+            return createHash(repoName);
+        
+        }
+
+        // list all the files
+        for (File file : files) {
+            // if the file is a directory and there are files in the directory
+            if (file.isDirectory() && file.listFiles().length != 0) {
+                // recursively look createTree()
+                references.append("tree " + createTree(treeName, file) + " " + file.getPath() + "\n");
+
+                // else if it's a file
+            } else if (file.isFile()) {
+                references.append("blob " + createHash(file) + " " +  file.getPath() + "\n");
+            
+            }
+
+            // if the directory has no files in it, it's ignored and doesn't contribute to the hash
+
+        }
+
+        // create the tree file
+        File tree = new File(treeName);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(tree));
+
+        // write the references and get the hash
+        writer.write(references.toString());
+        String hash = createHash(tree);
+        
+        writer.close();
+        return hash;
+    
+    }
+
     // private methods
     private static boolean verifyRepoExists(File mainDir) {
         // make sure the main directory (git) exists
@@ -301,3 +341,4 @@ public class Git {
     }
 
 }
+
