@@ -46,6 +46,11 @@ public class GitTester {
         Git.initializeRepo("git"); // Git Repository Already Exists
         Git.initializeRepo("git2"); // Git Repository Created
         Git.initializeRepo("git3"); // Git Repository Created
+
+        // add textFile folder
+        File myProgram = new File("myProgram");
+        myProgram.mkdir();
+
         System.out.println();
 
         // reseteRepo tests
@@ -57,11 +62,11 @@ public class GitTester {
 
         // createHash tests
         System.out.println("==createHash()==");
-        File file1 = createFile("git/file1.txt", "Hello, World!");
+        File file1 = createFile("myProgram/file1.txt", "Hello, World!");
         System.out.println(Git.createHash(file1)); // 0a0a9f2a6772942557ab5355d76af442f8f65e01
-        File file2 = createFile("git/file2.txt", "My name is Sophia Cohen-Pelletier :D");
+        File file2 = createFile("myProgram/file2.txt", "My name is Sophia Cohen-Pelletier :D");
         System.out.println(Git.createHash(file2)); // 82a593ef07d35285dd53c050a5cc564709b07dab
-        File file3 = createFile("git/file3.txt", "Why are you still reading the test cases?");
+        File file3 = createFile("myProgram/file3.txt", "Why are you still reading the test cases?");
         System.out.println(Git.createHash(file3)); // 2020d57460bdc7624d7e0e746b746cfa81414be5
         System.out.println();
 
@@ -89,15 +94,15 @@ public class GitTester {
         Git.updateIndex("git", file2); // f3db729468c3b8ff98e9d88a313d5dda633d26f7 git/file2
         Git.updateIndex("git", file3); // 1a282e683577b87e845d8f197ad2a7c7bda15384 git/file3
 
-        // check to see if files outside of git work
-        File hello = createFile("hello.txt", "hi");
+        // check to see if files inside of git work
+        File hello = createFile("git/hello.txt", "hi");
         Git.updateIndex("git", hello);
         System.out.println();
 
         // check for duplicates
-        File helloCopy = createFile("helloCopy.txt", "hi");
-        File helloCopy2 = createFile("helloCopy.txt", "hi");
-        File hello2 = createFile("git/hello.txt", "hi");
+        File helloCopy = createFile("myProgram/helloCopy.txt", "hi");
+        File helloCopy2 = createFile("myProgram/helloCopy.txt", "hi");
+        File hello2 = createFile("myProgram/hello.txt", "hi");
 
         Git.updateIndex("git", helloCopy);
         Git.updateIndex("git", helloCopy2);
@@ -107,12 +112,16 @@ public class GitTester {
         BufferedWriter writer = new BufferedWriter(new FileWriter(hello));
         writer.write("HIII!!");
         writer.close();
-
-        System.out.println(Git.createHash(hello));
         Git.updateIndex("git", hello);
 
+        System.out.println("==resetEverything()==");
         // resetEverything
-        // resetEverything("git");
+        resetEverything("git");
+        System.out.println();
+
+        System.out.println("==createTree()==");
+        System.out.println(Git.createTree("tree", myProgram));
+        System.out.println();
 
     }
 
