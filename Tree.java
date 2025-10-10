@@ -24,12 +24,12 @@ public class Tree {
             // if the file is a directory and there are files in the directory
             if (file.isDirectory() && file.listFiles().length != 0) {
                 // recursively look createTree()
-                content.append("tree " + createTree(file) + " " + file.getPath() + "\n");
+                content.append("tree " + createTree(file) + " " + file.getName() + "\n");
 
                 // else if it's a file
             } else if (file.isFile()) {
                 Git.createBlob(gitRepo, file);
-                content.append("blob " + Git.createHash(file) + " " +  file.getPath() + "\n");
+                content.append("blob " + Git.createHash(file) + " " +  file.getName() + "\n");
 
             }
 
@@ -42,17 +42,20 @@ public class Tree {
         File tempFile = new File("temp");
         BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
         writer.write(content.toString());
+        writer.close();
 
-        File tree = new File(gitRepo + "/objects/" + Git.createHash(tempFile));   
-        BufferedWriter writer2 = new BufferedWriter(new FileWriter(tree, true));
+        File tree = new File(gitRepo + "/objects/" + Git.createHash(tempFile)); 
+        tree.createNewFile();
+
+        BufferedWriter writer2 = new BufferedWriter(new FileWriter(tree));
 
         // delete temp file
         tempFile.delete();
 
         // write the references and get the hash
-        writer.write(content.toString());
+        writer2.write(content.toString());
     
-        writer.close();
+        writer2.close();
         return Git.createHash(tree);
 
     }
