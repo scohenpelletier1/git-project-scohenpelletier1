@@ -9,13 +9,13 @@ import java.util.ArrayList;
 public class Tree {
     static String gitRepo = Git.gitRepo;
         
-    public static String createTree(String treeName, File repoName) throws IOException, NoSuchAlgorithmException {
+    public static String createTree(File directoryPath) throws IOException, NoSuchAlgorithmException {
         // get all the files in the folder
-        File[] files = repoName.listFiles();
-        StringBuilder references = new StringBuilder();
+        File[] files = directoryPath.listFiles();
+        StringBuilder content = new StringBuilder();
 
         if (files.length == 0) {
-            return Git.createHash(repoName);
+            return Git.createHash(directoryPath);
         
         }
 
@@ -24,12 +24,12 @@ public class Tree {
             // if the file is a directory and there are files in the directory
             if (file.isDirectory() && file.listFiles().length != 0) {
                 // recursively look createTree()
-                references.append("tree " + createTree(treeName, file) + " " + file.getPath() + "\n");
+                content.append("tree " + createTree(file) + " " + file.getPath() + "\n");
 
                 // else if it's a file
             } else if (file.isFile()) {
                 Git.createBlob(gitRepo, file);
-                references.append("blob " + Git.createHash(file) + " " +  file.getPath() + "\n");
+                content.append("blob " + Git.createHash(file) + " " +  file.getPath() + "\n");
 
             }
 
@@ -38,11 +38,19 @@ public class Tree {
         // if the directory has no files in it, it's ignored and doesn't contribute to the hash
 
         // create the tree file
-        File tree = new File(gitRepo + "/objects/" + treeName);   
-        BufferedWriter writer = new BufferedWriter(new FileWriter(tree, true));
+        // hash the String builder to get the tree name
+        File tempFile = new File("temp");
+        BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+        writer.write(content.toString());
+
+        File tree = new File(gitRepo + "/objects/" + Git.createHash(tempFile));   
+        BufferedWriter writer2 = new BufferedWriter(new FileWriter(tree, true));
+
+        // delete temp file
+        tempFile.delete();
 
         // write the references and get the hash
-        writer.write(references.toString());
+        writer.write(content.toString());
     
         writer.close();
         return Git.createHash(tree);
