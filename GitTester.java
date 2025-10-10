@@ -42,10 +42,10 @@ public class GitTester {
     public static void main(String args[]) throws IOException, NoSuchAlgorithmException {
         // initializeRepo tests
         System.out.println("==initializeRepo()==");
-        Git.initializeRepo("git"); // Git Repository Created
-        Git.initializeRepo("git"); // Git Repository Already Exists
+        Git.initializeRepo("git1"); // Git Repository Created
+        Git.initializeRepo("git1"); // Git Repository Already Exists
         Git.initializeRepo("git2"); // Git Repository Created
-        Git.initializeRepo("git3"); // Git Repository Created
+        Git.initializeRepo("git"); // Git Repository Created
 
         // add textFile folder
         File myProgram = new File("myProgram");
@@ -55,8 +55,8 @@ public class GitTester {
 
         // reseteRepo tests
         System.out.println("==resetRepo()==");
+        Git.resetRepo("git1"); // Git Repository Deleted
         Git.resetRepo("git2"); // Git Repository Deleted
-        Git.resetRepo("git3"); // Git Repository Deleted
         Git.resetRepo("git4"); // Git Repository Does Not Exist
         System.out.println();
 
@@ -120,7 +120,16 @@ public class GitTester {
         System.out.println();
 
         System.out.println("==createTree()==");
-        System.out.println(Git.createTree("tree", myProgram));
+        System.out.println(Tree.createTree("tree", myProgram));
+        System.out.println();
+        
+        System.out.println("==resetEverything()=="); // again
+        // resetEverything
+        resetEverything("git");
+        System.out.println();
+
+        System.out.println("==createIndexTree()==");
+        Tree.createIndexTree(myProgram);
         System.out.println();
 
     }
