@@ -180,60 +180,35 @@ public class Git {
 
     }
 
-    public static void updateIndex(String gitRepo, File file) throws NoSuchAlgorithmException, IOException {
-        // get the update message
-        String update;
+    public static void updateIndex(File directoryPath) throws NoSuchAlgorithmException, IOException {
+        // get all the files in the folder
+        File[] files = directoryPath.listFiles();
+        StringBuilder indexContent = new StringBuilder();
 
-        if (compression) {
-            update = createHash(compressFile(file)) + " " + file.getPath();
+        // list all the files
+        for (File file : files) {
+            // if the file is a directory and there are files in the directory
+            if (file.isDirectory() && file.listFiles().length != 0) {
+                // recursively update the index
+                updateIndex(file);
 
-            // get rid of the compressed file
-            compressFile(file).delete();
-        
-        } else {
-            update = createHash(file) + " " + file.getPath();
+                // else if it's a file
+            } else if (file.isFile()) {
+                // create the index
+                Git.createBlob(gitRepo, file);
+                indexContent.append(Git.createHash(file) + " " +  file.getName() + "\n");
 
-        }
-
-        // check for file updates
-        String index = readFile(new File(gitRepo + "/index"));
-
-        // this will also take care of duplicates
-        if (index.contains(" " + file.getPath())) {
-            // create the writer and write the index update
-            BufferedReader reader = new BufferedReader(new FileReader(gitRepo + "/index"));
-            String line;
-            String newUpdate = "";
-
-            // replace entry
-            while ((line = reader.readLine()) != null) {
-                if (line.contains(" " + file.getPath())) {
-                    newUpdate += update + "\n";
-                
-                } else {
-                    // keep reading
-                    newUpdate += line + "\n";
-                
-                }
-            
             }
 
-            reader.close();
-
-            BufferedWriter writer = new BufferedWriter(new FileWriter(gitRepo + "/index"));
-            writer.write(newUpdate);
-            writer.close();
-
-        } else {
-            // create the writer and write the index update
-            BufferedWriter writer = new BufferedWriter(new FileWriter(gitRepo + "/index", true));
-            writer.write(update + "\n");
-
-            writer.close();
-        
         }
 
-        createBlob(gitRepo, file);
+        // get the file and buffered writer
+        File index = new File(gitRepo + "/index"); 
+        BufferedWriter writer2 = new BufferedWriter(new FileWriter(index, true));
+
+        // write the index content
+        writer2.write(indexContent.toString());
+        writer2.close();
     
     }
 

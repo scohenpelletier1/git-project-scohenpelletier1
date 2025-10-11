@@ -122,14 +122,15 @@ public class GitTester {
         System.out.println(Tree.createTree(myProgram));
         System.out.println();
         
-        // System.out.println("==resetEverything()=="); // again
-        // // resetEverything
-        // resetEverything("git");
-        // System.out.println();
+        System.out.println("==resetEverything()=="); // again
+        // resetEverything
+        resetEverything("git");
+        System.out.println();
 
-        // System.out.println("==createIndexTree()==");
+        System.out.println("==createIndexTree()==");
+        Git.updateIndex(myProgram);
         // Tree.createIndexTree(myProgram);
-        // System.out.println();
+        System.out.println();
 
     }
 
