@@ -8,18 +8,21 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 public class Git {
     // instance variables
     static boolean compression = false; // false by default
+    static String gitRepo;
     
     // public methods
-    public static void initializeRepo(String repoName) throws IOException {
+    public static void initializeRepo(String gitRepo) throws IOException {
+        Git.gitRepo = gitRepo;
         // Create the file paths
-        File git = new File(repoName);
-        File obj = new File(repoName + "/objects");
-        File index = new File(repoName + "/index");
-        File head = new File(repoName + "/HEAD");
+        File git = new File(gitRepo);
+        File obj = new File(gitRepo + "/objects");
+        File index = new File(gitRepo + "/index");
+        File head = new File(gitRepo + "/HEAD");
         
         // check to see if the repo exists
         if (git.exists() && obj.exists() && index.exists() && head.exists()) {
@@ -64,9 +67,9 @@ public class Git {
 
     }
 
-    public static void resetRepo(String repoName) {
+    public static void resetRepo(String gitRepo) {
         // make sure it exists
-        File git = new File(repoName);
+        File git = new File(gitRepo);
         if (!verifyRepoExists(git)) {
             System.out.println("Git Repository Does Not Exist");
             return;
@@ -98,7 +101,7 @@ public class Git {
 
     public static String createHash(File file) throws IOException, NoSuchAlgorithmException {
         // grab the file contents by reading the file
-        String fileContents = readFile(file);
+        String fileContents = readFile(file.getPath());
 
         // ceate sha1 digest
         MessageDigest digest = MessageDigest.getInstance("SHA1");
@@ -118,7 +121,7 @@ public class Git {
     
     }
 
-    public static String createBlob(String repoName, File file) throws NoSuchAlgorithmException, IOException {
+    public static String createBlob(String gitRepo, File file) throws NoSuchAlgorithmException, IOException {
         // get the hash
         String hash;
 
@@ -137,30 +140,18 @@ public class Git {
         }
 
         // make the blob file
-        File blobFile = new File(repoName + "/objects/" + hash);
-
-        // read the old file
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String fileContents = "";
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            fileContents += line;
-
-        }
-
-        reader.close();
+        File blobFile = new File(gitRepo + "/objects/" + hash);
 
         // write the contents in the new file
         BufferedWriter writer = new BufferedWriter(new FileWriter(blobFile));
-        writer.write(fileContents);
+        writer.write(readFile(file.getPath()));
         writer.close();
 
         // create the new file
         blobFile.createNewFile();
 
         // make sure it actually exists
-        File[] files = new File(repoName + "/objects").listFiles();
+        File[] files = new File(gitRepo + "/objects").listFiles();
 
         for (File objectFile : files) {
             // if the file is there, return true
@@ -177,104 +168,82 @@ public class Git {
 
     }
 
-    public static void updateIndex(String repoName, File file) throws NoSuchAlgorithmException, IOException {
-        // get the update message
-        String update;
-
-        if (compression) {
-            update = createHash(compressFile(file)) + " " + file.getPath();
-
-            // get rid of the compressed file
-            compressFile(file).delete();
-        
-        } else {
-            update = createHash(file) + " " + file.getPath();
-
-        }
-
-        // check for file updates
-        String index = readFile(new File(repoName + "/index"));
-
-        // this will also take care of duplicates
-        if (index.contains(" " + file.getPath())) {
-            // create the writer and write the index update
-            BufferedReader reader = new BufferedReader(new FileReader(repoName + "/index"));
-            String line;
-            String newUpdate = "";
-
-            // replace entry
-            while ((line = reader.readLine()) != null) {
-                if (line.contains(" " + file.getPath())) {
-                    newUpdate += update + "\n";
-                
-                } else {
-                    // keep reading
-                    newUpdate += line + "\n";
-                
-                }
-            
-            }
-
-            reader.close();
-
-            BufferedWriter writer = new BufferedWriter(new FileWriter(repoName + "/index"));
-            writer.write(newUpdate);
-            writer.close();
-
-        } else {
-            // create the writer and write the index update
-            BufferedWriter writer = new BufferedWriter(new FileWriter(repoName + "/index", true));
-            writer.write(update + "\n");
-
-            writer.close();
-        
-        }
-
-        createBlob(repoName, file);
-    
-    }
-
-    public static String createTree(String treeName, File repoName) throws IOException, NoSuchAlgorithmException {
+    public static void updateIndex(File directoryPath) throws NoSuchAlgorithmException, IOException {
         // get all the files in the folder
-        File[] files = repoName.listFiles();
-        StringBuilder references = new StringBuilder();
-
-        if (files.length == 0) {
-            return createHash(repoName);
-        
-        }
+        File[] files = directoryPath.listFiles();
+        StringBuilder indexContent = new StringBuilder();
 
         // list all the files
         for (File file : files) {
             // if the file is a directory and there are files in the directory
             if (file.isDirectory() && file.listFiles().length != 0) {
-                // recursively look createTree()
-                references.append("tree " + createTree(treeName, file) + " " + file.getPath() + "\n");
+                // recursively update the index
+                updateIndex(file);
 
                 // else if it's a file
             } else if (file.isFile()) {
-                references.append("blob " + createHash(file) + " " +  file.getPath() + "\n");
-            
-            }
+                // create the index
+                Git.createBlob(gitRepo, file);
+                indexContent.append(Git.createHash(file) + " " +  file.getPath());
+                indexContent.append("\n");
 
-            // if the directory has no files in it, it's ignored and doesn't contribute to the hash
+            }
 
         }
 
-        // create the tree file
-        File tree = new File(treeName);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(tree));
+        // get the file and buffered writer
+        File index = new File(gitRepo + "/index"); 
+        BufferedWriter writer2 = new BufferedWriter(new FileWriter(index, true));
 
-        // write the references and get the hash
-        writer.write(references.toString());
-        String hash = createHash(tree);
-        
-        writer.close();
-        return hash;
+        // write the index content
+        writer2.write(indexContent.toString());
+        writer2.close();
     
     }
 
     // private methods
+    private static File compressFile(File file) throws IOException {
+        // read the original file
+        String fileContents = readFile(file.getPath());
+
+        // encode the contents
+        byte[] bytes = fileContents.getBytes("UTF-8");
+
+        // make a new compressed file
+        File compressedFile = new File("Compressed" + file.getName());
+
+        // get the buffered writer and override the file with the compressed data
+        BufferedWriter writer = new BufferedWriter(new FileWriter(compressedFile));
+        writer.write(bytes.toString());
+        writer.close();
+
+        // return the now compressed file
+        return compressedFile;
+    
+    }
+
+    public static String readFile(String path) throws IOException {
+        // get the file
+        File file = new File(path);
+
+        // get the reader
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String fileContents = "";
+        String line;
+
+        // read the file then close the file
+        while ((line = reader.readLine()) != null) {
+            fileContents += line + "\n";
+        
+        }
+
+        reader.close();
+
+        // return the file contents
+        return fileContents;
+    
+    }
+
     private static boolean verifyRepoExists(File mainDir) {
         // make sure the main directory (git) exists
         if (!mainDir.exists()) {
@@ -301,44 +270,4 @@ public class Git {
     
     }
 
-    private static String readFile(File file) throws IOException {
-        // get the reader
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String fileContents = "";
-        String line;
-
-        // read the file then close the file
-        while ((line = reader.readLine()) != null) {
-            fileContents += line;
-        
-        }
-
-        reader.close();
-
-        // return the file contents
-        return fileContents;
-    
-    }
-
-    private static File compressFile(File file) throws IOException {
-        // read the original file
-        String fileContents = readFile(file);
-
-        // encode the contents
-        byte[] bytes = fileContents.getBytes("UTF-8");
-
-        // make a new compressed file
-        File compressedFile = new File("Compressed" + file.getName());
-
-        // get the buffered writer and override the file with the compressed data
-        BufferedWriter writer = new BufferedWriter(new FileWriter(compressedFile));
-        writer.write(bytes.toString());
-        writer.close();
-
-        // return the now compressed file
-        return compressedFile;
-    
-    }
-
 }
-
