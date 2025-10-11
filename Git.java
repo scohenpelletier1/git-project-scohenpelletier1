@@ -101,7 +101,7 @@ public class Git {
 
     public static String createHash(File file) throws IOException, NoSuchAlgorithmException {
         // grab the file contents by reading the file
-        String fileContents = readFile(file);
+        String fileContents = readFile(file.getPath());
 
         // ceate sha1 digest
         MessageDigest digest = MessageDigest.getInstance("SHA1");
@@ -142,21 +142,9 @@ public class Git {
         // make the blob file
         File blobFile = new File(gitRepo + "/objects/" + hash);
 
-        // read the old file
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String fileContents = "";
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            fileContents += line;
-
-        }
-
-        reader.close();
-
         // write the contents in the new file
         BufferedWriter writer = new BufferedWriter(new FileWriter(blobFile));
-        writer.write(fileContents);
+        writer.write(readFile(file.getPath()));
         writer.close();
 
         // create the new file
@@ -196,7 +184,8 @@ public class Git {
             } else if (file.isFile()) {
                 // create the index
                 Git.createBlob(gitRepo, file);
-                indexContent.append(Git.createHash(file) + " " +  file.getName() + "\n");
+                indexContent.append(Git.createHash(file) + " " +  file.getPath());
+                indexContent.append("\n");
 
             }
 
@@ -215,7 +204,7 @@ public class Git {
     // private methods
     private static File compressFile(File file) throws IOException {
         // read the original file
-        String fileContents = readFile(file);
+        String fileContents = readFile(file.getPath());
 
         // encode the contents
         byte[] bytes = fileContents.getBytes("UTF-8");
@@ -233,7 +222,10 @@ public class Git {
     
     }
 
-    private static String readFile(File file) throws IOException {
+    public static String readFile(String path) throws IOException {
+        // get the file
+        File file = new File(path);
+
         // get the reader
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String fileContents = "";
@@ -241,7 +233,7 @@ public class Git {
 
         // read the file then close the file
         while ((line = reader.readLine()) != null) {
-            fileContents += line;
+            fileContents += line + "\n";
         
         }
 
@@ -279,4 +271,3 @@ public class Git {
     }
 
 }
-

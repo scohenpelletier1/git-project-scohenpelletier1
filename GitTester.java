@@ -129,7 +129,7 @@ public class GitTester {
 
         System.out.println("==createIndexTree()==");
         Git.updateIndex(myProgram);
-        // Tree.createIndexTree(myProgram);
+        System.out.println(Tree.createIndexTree(myProgram));
         System.out.println();
 
     }
