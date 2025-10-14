@@ -40,17 +40,17 @@ public class GitTester {
     }
 
     public static void main(String args[]) throws IOException, NoSuchAlgorithmException {
-        // initializeRepo tests
-        System.out.println("==initializeRepo()==");
+        // // initializeRepo tests
+        // System.out.println("==initializeRepo()==");
         // Git.initializeRepo("git1"); // Git Repository Created
         // Git.initializeRepo("git1"); // Git Repository Already Exists
         // Git.initializeRepo("git2"); // Git Repository Created
-        Git.initializeRepo("git"); // Git Repository Created
+        // Git.initializeRepo("git"); // Git Repository Created
 
-        // add textFile folder
-        File myProgram = new File("myProgram");
+        // // add textFile folder
+        // File myProgram = new File("myProgram");
 
-        System.out.println();
+        // System.out.println();
 
         // // reseteRepo tests
         // System.out.println("==resetRepo()==");
@@ -89,13 +89,13 @@ public class GitTester {
 
         // // updateIndex tests
         // System.out.println("==updateIndex()==");
-        // Git.updateIndex("git", file1); // db1668952fdb286939fc39d573ed88c720323b69 git/file1
-        // Git.updateIndex("git", file2); // f3db729468c3b8ff98e9d88a313d5dda633d26f7 git/file2
-        // Git.updateIndex("git", file3); // 1a282e683577b87e845d8f197ad2a7c7bda15384 git/file3
+        // Git.updateIndex(file1); // db1668952fdb286939fc39d573ed88c720323b69 git/file1
+        // Git.updateIndex(file2); // f3db729468c3b8ff98e9d88a313d5dda633d26f7 git/file2
+        // Git.updateIndex(file3); // 1a282e683577b87e845d8f197ad2a7c7bda15384 git/file3
 
         // // check to see if files inside of git work
         // File hello = createFile("git/hello.txt", "hi");
-        // Git.updateIndex("git", hello);
+        // Git.updateIndex(hello);
         // System.out.println();
 
         // // check for duplicates
@@ -103,34 +103,134 @@ public class GitTester {
         // File helloCopy2 = createFile("myProgram/helloCopy.txt", "hi");
         // File hello2 = createFile("myProgram/hello.txt", "hi");
 
-        // Git.updateIndex("git", helloCopy);
-        // Git.updateIndex("git", helloCopy2);
-        // Git.updateIndex("git", hello2);
+        // Git.updateIndex(helloCopy);
+        // Git.updateIndex(helloCopy2);
+        // Git.updateIndex(hello2);
 
         // // files can be modified
-        // BufferedWriter writer = new BufferedWriter(new FileWriter(hello));
-        // writer.write("HIII!!");
-        // writer.close();
-        // Git.updateIndex("git", hello);
+        // try (BufferedWriter writer = new BufferedWriter(new FileWriter(hello))) {
+        //     writer.write("HIII!!");
+        // }
+        // Git.updateIndex(hello);
 
-        System.out.println("==resetEverything()==");
-        // resetEverything
-        resetEverything("git");
-        System.out.println();
+        // System.out.println("==resetEverything()==");
+        // // resetEverything
+        // resetEverything("git");
+        // System.out.println();
 
-        System.out.println("==createTree()==");
-        System.out.println(Tree.createTree(myProgram));
-        System.out.println();
+        // System.out.println("==createTree()==");
+        // System.out.println(Tree.createTree(myProgram));
+        // System.out.println();
         
-        System.out.println("==resetEverything()=="); // again
-        // resetEverything
-        resetEverything("git");
+        // System.out.println("==resetEverything()=="); // again
+        // // resetEverything
+        // resetEverything("git");
+        // System.out.println();
+
+        // System.out.println("==createIndexTree()==");
+        // Git.updateIndex(myProgram);
+        // System.out.println(Tree.createIndexTree(myProgram));
+        // System.out.println();
+
+        // resetEverything("git");
+
+        // wrapper tests
+        GitWrapper gw = new GitWrapper();
+
+        // init()
+        System.out.println("==init()==");
+        try {
+            // create repo
+            gw.init();
+
+            // delete objects and see if code still works
+            File obj = new File("git/objects");
+            obj.delete();
+
+            gw.init();
+
+            // delete index and HEAD and see if code still works
+            File index = new File("git/index");
+            File head = new File("git/HEAD");
+            index.delete();
+            head.delete();
+
+            gw.init();
+
+            // make sure running it again doesn't cause errors
+            gw.init();
+            
+        } catch (Exception e) {
+            System.out.println("init() does not work");
+
+        }
         System.out.println();
 
-        System.out.println("==createIndexTree()==");
-        Git.updateIndex(myProgram);
-        System.out.println(Tree.createIndexTree(myProgram));
+        System.out.println("==add()==");
+        try {
+            // throws error for a nonexistant path
+            gw.add("myProgram/inner/world.txt");
+
+        } catch (Exception e) {
+            System.out.println("File does not exist.");
+
+        }
         System.out.println();
+
+        try {
+            // throws error for directory path
+            gw.add("myProgram/scripts");
+
+        } catch (Exception e) {
+            System.out.println("Cannot add a directory to the index file.");
+
+        }
+        System.out.println();
+
+        try {
+            // stages a new file
+            gw.add("myProgram/hello.txt");
+            System.out.println("myProgram/hello.txt added to index file.");
+
+            if (new File("git/objects/" + Git.createHash(new File("myProgram/hello.txt"))).exists()) {
+                System.out.println("Blob for this file was created");
+            
+            } else {
+                System.out.println("FAILED TO CREATE BLOB");
+            
+            }
+            System.out.println();
+
+            // make change, stage again
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("myProgram/hello.txt"))) {
+                writer.write("I have updated the file myProgram/hello.txt to say this instead of \"hi\"");
+            }
+
+            gw.add("myProgram/hello.txt");
+            System.out.println("myProgram/hello.txt changed and re-added to index file.");
+
+            if (new File("git/objects/" + Git.createHash(new File("myProgram/hello.txt"))).exists()) {
+                System.out.println("Blob for this file was updated, two versions now exist in git/objects");
+            
+            } else {
+                System.out.println("FAILED TO CREATE NEW BLOB");
+            
+            }
+            System.out.println();
+
+            // no update means nothing changes
+            gw.add("myProgram/hello.txt");
+            System.out.println("myProgram/hello.txt unchanged and not re-added to index file.");
+            
+        } catch (Exception e) {
+            System.out.println("add() does not work");
+
+        }
+        System.out.println();
+
+        // gw.commit("John Doe", "Initial commit");
+        // gw.checkout("1234567890");
+
 
     }
 
