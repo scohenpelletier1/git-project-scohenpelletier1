@@ -10,7 +10,6 @@ import java.security.NoSuchAlgorithmException;
 
 public class Git {
 // instance variables
-static boolean compression = false; // false by default
 static String gitRepo;
 
 // public methods
@@ -65,39 +64,38 @@ static String gitRepo;
 
     }
 
-
-    public static void resetRepo(String gitRepo) {
+    public static void cleanUp(String filePath) {
         // make sure it exists
-        File git = new File(gitRepo);
-        if (!verifyRepoExists(git)) {
-            System.out.println("Git Repository Does Not Exist");
-            return;
+        File file = new File(filePath);
 
+        // check if the file is a directory
+        if (file.isDirectory()) {
+            // get all the files inside the directory
+            File[] files = file.listFiles();
+
+            // cycle through and delete them
+            for (File newFile : files) {
+                if (newFile.isDirectory()) {
+                    cleanUp(newFile.getPath());
+                
+                }
+
+                newFile.delete();
+
+            }
+        
         }
 
-        // get all the files inside the directory
-        File[] files = git.listFiles();
-
-        // cycle through and delete them
-        for (File file : files) {
-            file.delete();
-
-        }
-
-        // delete main directory
-        git.delete();
+        // delete current file
+        file.delete();
 
         // check to make sure that the repo was deleted
-        if (verifyRepoExists(git)) {
+        if (file.exists()) {
             System.out.println("Git Repository Could Not Be Deleted");
-
-        } else {
-            System.out.println("Git Repository Deleted");
 
         }
 
     }
-
 
     public static String createHash(File file) throws IOException, NoSuchAlgorithmException {
         // grab the file contents by reading the file
@@ -121,24 +119,12 @@ static String gitRepo;
 
     }
 
-
     public static String createBlob(String gitRepo, File file) throws NoSuchAlgorithmException, IOException {
         // get the hash
         String hash;
 
-        // if compression is turned on
-        if (compression) {
-            // compress the file and get hash
-            hash = createHash(compressFile(file));
-
-            // get rid of the compressed file
-            compressFile(file).delete();
-
-        } else {
-            // get the file's hash
-            hash = createHash(file);
-
-        }
+        // get the file's hash
+        hash = createHash(file);
 
         // make the blob file
         File blobFile = new File(gitRepo + "/objects/" + hash);
@@ -168,7 +154,6 @@ static String gitRepo;
         return "";
 
     }
-
 
     public static void updateIndex(File filePath) throws NoSuchAlgorithmException, IOException {
         // edge cases
@@ -213,27 +198,6 @@ static String gitRepo;
     }
 
     // private methods
-    private static File compressFile(File file) throws IOException {
-        // read the original file
-        String fileContents = readFile(file.getPath());
-
-        // encode the contents
-        byte[] bytes = fileContents.getBytes("UTF-8");
-
-
-        // make a new compressed file
-        File compressedFile = new File("Compressed" + file.getName());
-
-        // get the buffered writer and override the file with the compressed data
-        BufferedWriter writer = new BufferedWriter(new FileWriter(compressedFile));
-        writer.write(bytes.toString());
-        writer.close();
-
-        // return the now compressed file
-        return compressedFile;
-
-    }
-
     public static String readFile(String path) throws IOException {
         // get the file
         File file = new File(path);
