@@ -1,7 +1,6 @@
-==Git.java==
+# ==Git.java==
 Global variables:
-compression
-    toggles whether or not the file compresses. False by default
+
 
 Method Summary:
 initializeRepo()

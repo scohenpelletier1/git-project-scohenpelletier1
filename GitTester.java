@@ -214,18 +214,21 @@ public class GitTester {
         System.out.println(Tree.createTree(myProgram));
         System.out.println();
         
-        // resetEverything again
-        System.out.println();
+        // reset object files
+        resetObjectFiles("git");
 
+        // works multiple times, same outcome
         System.out.println("==createIndexTree()==");
-        System.out.println(Tree.createIndexTree(myProgram));
+        System.out.println(Tree.createIndexTree());
+        System.out.println(Tree.createIndexTree());
+        System.out.println(Tree.createIndexTree());
         System.out.println();
 
         // delete git
         Git.cleanUp("git");
 
-        // GP-5.0 TESTS
-        
+        // GP-5.0 TESTS vvvvvvvv
+
         // wrapper tests
         GitWrapper gw = new GitWrapper();
 
@@ -240,13 +243,6 @@ public class GitTester {
         System.out.println();
         testAdd(gw);
         System.out.println();
-
-        // commit()
-
-
-        // gw.commit("John Doe", "Initial commit");
-        // gw.checkout("1234567890");
-
 
     }
 

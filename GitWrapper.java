@@ -48,9 +48,8 @@ public class GitWrapper {
     * @param author  The name of the author making the commit.
     * @param message The commit message describing the changes.
     * @return The SHA1 hash of the new commit.
-    */
+   */
     public String commit(String author, String message) {
-        // to-do: implement functionality here
         return "";
 
     }

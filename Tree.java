@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +16,25 @@ public class Tree {
     static String gitRepo = Git.gitRepo;
         
     public static String createTree(File directoryPath) throws IOException, NoSuchAlgorithmException {
+        String directoryHash = createTreeHelper(directoryPath);
+
+        // root file!!!!
+        Path tempName = Paths.get("rootTemp");
+
+        File rootTemp = new File("rootTemp");
+        BufferedWriter rootWriter = new BufferedWriter(new FileWriter(rootTemp));
+        rootWriter.write("tree " + directoryHash + " " + directoryPath);
+        rootWriter.close();
+
+        // change it's name
+        Path rootFinal = Paths.get(gitRepo + "/objects/" + Git.createHash(rootTemp));
+        Files.move(tempName, rootFinal, StandardCopyOption.REPLACE_EXISTING);
+
+        return Git.createHash(new File(rootFinal.toString()));
+
+    }
+
+    public static String createTreeHelper(File directoryPath) throws NoSuchAlgorithmException, IOException {
         // get all the files in the folder
         File[] files = directoryPath.listFiles();
         StringBuilder content = new StringBuilder();
@@ -26,7 +49,7 @@ public class Tree {
             // if the file is a directory and there are files in the directory
             if (file.isDirectory() && file.listFiles().length != 0) {
                 // recursively look createTree()
-                content.append("tree " + createTree(file) + " " + file.getName() + "\n");
+                content.append("tree " + createTreeHelper(file) + " " + file.getName() + "\n");
 
                 // else if it's a file
             } else if (file.isFile()) {
@@ -40,29 +63,22 @@ public class Tree {
         // if the directory has no files in it, it's ignored and doesn't contribute to the hash
 
         // create the tree file
-        // hash the String builder to get the tree name
+        Path tempName = Paths.get("temp");
+
         File tempFile = new File("temp");
         BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
         writer.write(content.toString());
         writer.close();
 
-        File tree = new File(gitRepo + "/objects/" + Git.createHash(tempFile)); 
-        tree.createNewFile();
-
-        BufferedWriter writer2 = new BufferedWriter(new FileWriter(tree));
-
-        // delete temp file
-        tempFile.delete();
-
-        // write the references and get the hash
-        writer2.write(content.toString());
-    
-        writer2.close();
-        return Git.createHash(tree);
+        // change it's name
+        Path finalName = Paths.get(gitRepo + "/objects/" + Git.createHash(tempFile));
+        Files.move(tempName, finalName, StandardCopyOption.REPLACE_EXISTING);
+        
+        return Git.createHash(new File(finalName.toString()));
 
     }
 
-    public static String createIndexTree(File directoryPath) throws NoSuchAlgorithmException, IOException {
+    public static String createIndexTree() throws NoSuchAlgorithmException, IOException {
         // create a temp file to copy over the contents from the index file
         File tempFile = new File("workingList");
         List<String> workingList = new ArrayList<>();
@@ -97,6 +113,7 @@ public class Tree {
         BufferedWriter writer2 = new BufferedWriter(new FileWriter(tempFile));
         writer2.write(workingList.get(0));
         writer2.close();
+
         Git.createBlob(gitRepo, tempFile);
 
         // now just make the root
@@ -143,7 +160,8 @@ public class Tree {
             // when the file path is found
             if (filePaths.get(index).startsWith(leafHeavyDirectory + "/")) {
                 // add everything in the directory to the tree contents
-                treeContents.append(workingList.get(index) + "\n");
+                int lastSlash = workingList.get(index).lastIndexOf("/");
+                treeContents.append(workingList.get(index).substring(0, 46) + workingList.get(index).substring(lastSlash + 1) + "\n");
             
                 // delete its entries in the lists
                 filePaths.remove(index);
